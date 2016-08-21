@@ -1,0 +1,258 @@
+<dashboard>
+  <label>Incident Overview</label>
+  <row>
+    <panel>
+      <table>
+        <title>Mean Time to Resolution</title>
+        <search>
+          <query>index=* sourcetype="servicenow" assignment_group_name="JI - SHU R1" OR assignment_group_name="JI - SHU Y1" OR assignment_group_name="Jacqueline Support"
+            | eval resolved_at=mvdedup(resolved_at)
+            | eval closed_at=mvdedup(closed_at)
+            | dedup number
+            | eval closed=if(closed_at=="",if(resolved_at=="","NA",resolved_at),closed_at)                                                   
+            | where closed!="NA"
+            | eval rcm=if(closed_by=="",if(resolved_by=="",0,1),1)
+            | eval rcs=if(rcm==0,1,0)
+            | dedup number 
+            | rex field=sys_created_on "\d\d\d\d-(?&lt;created_on&gt;[^\n]+)"
+            | rex field=closed_at "\d\d\d\d-(?&lt;closed_on&gt;[^\n]+)"
+            | eval atime=strptime(created_on, "%m-%d %H:%M:%S")
+            | eval btime=strptime(closed_on, "%m-%d %H:%M:%S")
+            | eval duration=abs(btime-atime)
+            | stats count avg(eval(duration/60/60)) as avgMttr by assignment_group_name</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="count">10</option>
+      </table>
+    </panel>
+    <panel>
+      <table>
+        <title>Open Issues by Team</title>
+        <search>
+          <query>index=* sourcetype="servicenow" assignment_group_name="JI - SHU R1" OR assignment_group_name="JI - SHU Y1" OR assignment_group_name="Jacqueline Support"
+            | eval closed=if(closed_at=="",if(resolved_at=="","NA",resolved_at),closed_at)
+            | dedup number
+            | where active="true" AND isnull(closed) AND isnull(resolved_at)
+            | stats count by assignment_group_name</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="count">10</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>Closed Tickets by Team</title>
+        <search>
+          <query>index=* sourcetype="servicenow" assignment_group_name="JI - SHU R1" OR assignment_group_name="JI - SHU Y1" OR assignment_group_name="Jacqueline Support"             | eval resolved_at=mvdedup(resolved_at)             | eval closed_at=mvdedup(closed_at)             | dedup number             | eval closed=if(closed_at=="",if(resolved_at=="","NA",resolved_at),closed_at)             | where closed!="NA"             | eval rcm=if(closed_by=="",if(resolved_by=="",0,1),1)             | eval rcs=if(rcm==0,1,0)             | dedup number             |timechart count  by assignment_group_name</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">right</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>Tickets Created/ Resolved by day</title>
+        <search>
+          <query>index=* sourcetype="servicenow" assignment_group_name="JI - SHU R1" OR assignment_group_name="JI - SHU Y1" OR assignment_group_name="Jacqueline Support"
+            | dedup sys_id sys_created_on
+            | timechart span=1d count as Created 
+            | join _time [search index=* sourcetype="servicenow" assignment_group_name="JI - SHU R1" OR assignment_group_name="JI - SHU Y1" OR assignment_group_name="Jacqueline Support"
+            | eval closed=if(closed_at=="",if(resolved_at=="","NA",resolved_at),closed_at)
+            | where closed!="NA"
+            | eval rcm=if(closed_by=="",if(resolved_by=="",0,1),1)
+            | eval rcs=if(rcm==0,1,0)
+            | dedup number
+            | timechart span=1d sum(rcs) as Auto_Resolved sum(rcm) as Manual_Resolved ] 
+            | eval delta=(Created - (Auto_Resolved+Manual_Resolved))
+            | streamstats sum(delta) as delta</query>
+          <earliest></earliest>
+          <latest></latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">delta</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">right</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>Closed by JI - SHU R1member</title>
+        <search>
+          <query>index=* sourcetype="servicenow" assignment_group_name="JI - SHU R1"
+            | dedup number
+            | eval closed=if(closed_at=="",if(resolved_at=="","NA",resolved_at),closed_at)
+            | where closed!="NA"
+            | eval rcm=if(closed_by=="",if(resolved_by=="",0,1),1)
+            | eval rcs=if(rcm==0,1,0)
+            | dedup number 
+            | timechart count  by assignment_user_username</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">right</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>Closed by Jacqueline Support member</title>
+        <search>
+          <query>index=* sourcetype="servicenow" assignment_group_name="Jacqueline Support" 
+            | dedup number
+            | eval closed=if(closed_at=="",if(resolved_at=="","NA",resolved_at),closed_at)
+            | where closed!="NA"
+            | eval rcm=if(closed_by=="",if(resolved_by=="",0,1),1)
+            | eval rcs=if(rcm==0,1,0)
+            | dedup number 
+            | timechart count  by assignment_user_username</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">right</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>Closed by JI - SHU Y1</title>
+        <search>
+          <query>index=* sourcetype="servicenow" assignment_group_name="JI - SHU Y1"
+            | eval resolved_at=mvdedup(resolved_at)
+            | eval closed_at=mvdedup(closed_at)
+            | dedup number
+            | eval closed=if(closed_at=="",if(resolved_at=="","NA",resolved_at),closed_at)
+            | where closed!="NA"
+            | eval rcm=if(closed_by=="",if(resolved_by=="",0,1),1)
+            | eval rcs=if(rcm==0,1,0)
+            | dedup number 
+            | timechart count  by assignment_user_username</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">right</option>
+      </chart>
+    </panel>
+  </row>
+</dashboard>
