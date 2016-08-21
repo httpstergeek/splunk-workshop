@@ -1,0 +1,40 @@
+<dashboard stylesheet="custom.css">
+  <label>Incident Overview Enhanced</label>
+  <row>
+    <panel>
+      <title>Overview</title>
+      <html>
+        <table class="u-full-width">
+          <thead>
+            <tr>
+              <th>Team</th>
+              <th>Active</th>
+              <th>Resolved</th>
+              <th>MTTR</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a href="#" class="button button-primary">Jacqueline Support</a></td>
+              <td>NA</td>
+              <td>NA</td>
+              <td>NA</td>
+            </tr>
+            <tr>
+              <td><a href="#" class="button button-primary">JI - SHU Y1</a></td>
+              <td>42</td>
+              <td>NA</td>
+              <td>NA</td>
+            </tr>
+            <tr>
+              <td><a href="#" class="button button-primary">JI - SHU R1</a></td>
+              <td>NA</td>
+              <td>NA</td>
+              <td>NA</td>
+            </tr>
+          </tbody>
+        </table>
+      </html>
+    </panel>
+  </row>
+</dashboard>
