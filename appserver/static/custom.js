@@ -19,6 +19,22 @@ require(["underscore",
         }
       }
 
+      function runSearch(instanceName) {
+        "use strict";
+        var searchInstance = mvc.Components.getInstance(instanceName);
+        var dispatchState = searchInstance.settings['attributes']['data']['isDone'];
+        if(dispatchState == true) {
+          searchInstance.startSearch();
+        }
+      }
+
+      // Reloads base searches on 5min interval
+      $('.dashboard-body').ready(function() {
+        setInterval(function(){
+          runSearch('mttr');
+          runSearch('openIncidents');
+        }, 300000);
+      });
 
       //  Creates onclick event for div class groupname
       $('.dashboard-body').on('click', 'a.button.button-primary', function() {

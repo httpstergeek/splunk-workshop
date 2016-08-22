@@ -1,4 +1,4 @@
-<dashboard stylesheet="custom.css">
+<dashboard script="custom.js" stylesheet="custom.css">
   <label>Incident Overview Enhanced</label>
   <!--Base searches for mttr with postprocess searches to filter Group for Single-->
   <search id="mttr">
