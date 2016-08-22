@@ -15,8 +15,8 @@
       <html>
         <div id="heatmaphourday"
              class="splunk-view"
-             data-require="app/d3_splunk_extentions/components/heatmap_dayhour/heatmap_dayhour"
-             data-options=""/>
+             data-require="app/splunk-workshop/components/heatmap_dayhour/heatmap_dayhour"
+             data-options="{&quot;managerid&quot;: &quot;heatmaphourdaysearch&quot;}"/>
       </html>
     </panel>
     <panel>

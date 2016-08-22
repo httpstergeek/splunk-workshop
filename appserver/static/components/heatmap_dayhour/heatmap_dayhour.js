@@ -3,12 +3,12 @@
  */
 define(function(require, exports, module) {
   var _ = require("underscore");
+  var $ = require("jquery");
+  var d3 = require("../d3/d3");
+  var colorbrewer = require("../d3/colorbrewer");
   var SimpleSplunkView = require("splunkjs/mvc/simplesplunkview");
   var mvc = require("splunkjs/mvc");
-  //
-  // All Additional JS modules
-  //
-
+  var css = require("css!./heatmap_dayhour.css");
 
   // Define the customclass view
   var Heatmaphourday = SimpleSplunkView.extend({
@@ -18,7 +18,14 @@ define(function(require, exports, module) {
     //
     options: {
       "managerid": null,
-      "data": "preview"
+      "data": "preview",
+      "gridSize": 24,
+      "height": 450,
+      "hourField": "time",
+      "dayField": "day",
+      "valueField": "value",
+      "colorbrewPalette": "Paired",
+      "paletteNumber": 12
     },
 
     output_mode: "json",
@@ -40,20 +47,17 @@ define(function(require, exports, module) {
 
     // Making the data look how we want it to for updateView to do its job
     formatData: function(data) {
-      //
-      // formatData is used to massage data into a usable
-      // structure for Data VIZ
-      //
       var formattedData = [];
-
+      formattedData.push(data);
 
       return formattedData;
     },
     // update view as search finished
     updateView: function(viz, data) {
-      //
-      // ADD VIZ HERE
-      //
+      this.$el.html("");
+      var id = this.id;
+      $("#"+id).append("<p>"+ JSON.stringify(data[0],null, '  ') +"</p>")
+
     }
   });
   return Heatmaphourday;
