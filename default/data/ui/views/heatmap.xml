@@ -16,7 +16,10 @@
         <div id="heatmaphourday"
              class="splunk-view"
              data-require="app/splunk-workshop/components/heatmap_dayhour/heatmap_dayhour"
-             data-options="{&quot;managerid&quot;: &quot;heatmaphourdaysearch&quot;}"/>
+             data-options="{
+                            &quot;managerid&quot;: &quot;heatmaphourdaysearch&quot;,
+                            &quot;valueField&quot;:&quot;count&quot;
+                            }"/>
       </html>
     </panel>
     <panel>
