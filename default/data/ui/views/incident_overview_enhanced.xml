@@ -126,7 +126,7 @@
           <query>index=* sourcetype="servicenow" assignment_group_name="$team$"
             | dedup sys_id sys_created_on
             | timechart span=1d count as Created
-            | join _time [search index=* sourcetype="servicenow" assignment_group_name="JI - SHU R1" OR assignment_group_name="JI - SHU Y1" OR assignment_group_name="Jacqueline Support"
+            | join _time [search index=* sourcetype="servicenow" assignment_group_name="$team$"
             | eval closed=if(closed_at=="",if(resolved_at=="","NA",resolved_at),closed_at)
             | where closed!="NA"
             | eval rcm=if(closed_by=="",if(resolved_by=="",0,1),1)
