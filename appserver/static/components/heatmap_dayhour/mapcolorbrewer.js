@@ -54,8 +54,25 @@ define(function(require, exports, module) {
       //
       this.$el.html(""); // Clears waiting for Data
       var id = this.id;
-      console.log(id)
-      $("#"+id).append("<h2>This is my Custom Viz</h2>")
+      d3.select("#"+id)
+        .selectAll(".palette")
+        .data(d3.entries(colorbrewer))
+        .enter().append("span")
+        .attr("class", "palette")
+        .attr("title", function(d) { return d.key; })
+        .text(function(d) {
+          var x = colorbrewer[d.key];
+          var b = _.map(x, function(num){return num.length});
+          var max = Math.max.apply(Math, b);
+          var min = Math.min.apply(Math, b);
+          return d.key+": "+ min + "-"+ max; })
+        .on("click", function(d) { console.log(d3.values(d.value).map(JSON.stringify).join("\n")); })
+        .selectAll(".swatch")
+        .data(function(d) { return d.value[d3.keys(d.value).map(Number).sort(d3.descending)[0]]; })
+        .enter().append("span")
+        .attr("class", "swatch")
+        .style("margin", "0 auto")
+        .style("background-color", function(d) { return d; });
     }
   });
   return Mapcolorbrewer;
