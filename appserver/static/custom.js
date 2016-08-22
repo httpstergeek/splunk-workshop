@@ -61,7 +61,7 @@ require(["underscore",
         '<tr class="<%= hlight %>"><td><%= line.assignment_user_username %></td><td><%= line.count %></td></tr>' +
         '<% } %>' +
         '</tbody>' +
-        '</table>'
+        '</table>';
 
       // Getting default tokens and template
       var defaultTokenModel = mvc.Components.get('default');
