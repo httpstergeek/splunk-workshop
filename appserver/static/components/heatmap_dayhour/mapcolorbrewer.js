@@ -1,6 +1,10 @@
 /**
- * Created by berniem on 8/21/16.
+ * Created by berniem on 8/22/16.
  */
+/**
+ * Created by berniem on 4/6/16.
+ */
+
 define(function(require, exports, module) {
   var _ = require("underscore");
   var SimpleSplunkView = require("splunkjs/mvc/simplesplunkview");
@@ -9,10 +13,9 @@ define(function(require, exports, module) {
   // All Additional JS modules
   //
 
-
   // Define the customclass view
-  var Heatmaphourday = SimpleSplunkView.extend({
-    className: "splunk-headmap-day-hour-chart",
+  var Mapcolorbrewer = SimpleSplunkView.extend({
+    className: "splunk-map-color-brew",
     //
     // Custom VIZ options used in XML div data-options
     //
@@ -37,8 +40,6 @@ define(function(require, exports, module) {
     createView: function() {
       return true;
     },
-
-    // Making the data look how we want it to for updateView to do its job
     formatData: function(data) {
       //
       // formatData is used to massage data into a usable
@@ -49,12 +50,12 @@ define(function(require, exports, module) {
 
       return formattedData;
     },
-    // update view as search finished
     updateView: function(viz, data) {
       //
       // ADD VIZ HERE
       //
+
     }
   });
-  return Heatmaphourday;
+  return Mapcolorbrewer;
 });
