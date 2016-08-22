@@ -1,5 +1,87 @@
 <dashboard stylesheet="custom.css">
   <label>Incident Overview Enhanced</label>
+  <!--Base searches for mttr with postprocess searches to filter Group for Single-->
+  <search id="mttr">
+    <query>
+      index=* sourcetype="servicenow" assignment_group_name="JI - SHU R1" OR assignment_group_name="JI - SHU Y1" OR assignment_group_name="Jacqueline Support"
+            | eval resolved_at=mvdedup(resolved_at)
+            | eval closed_at=mvdedup(closed_at)
+            | dedup number
+            | eval closed=if(closed_at=="",if(resolved_at=="","NA",resolved_at),closed_at)                                                   
+            | where closed!="NA"
+            | eval rcm=if(closed_by=="",if(resolved_by=="",0,1),1)
+            | eval rcs=if(rcm==0,1,0)
+            | dedup number 
+            | rex field=sys_created_on "\d\d\d\d-(?&lt;created_on&gt;[^\n]+)"
+            | rex field=closed_at "\d\d\d\d-(?&lt;closed_on&gt;[^\n]+)"
+            | eval atime=strptime(created_on, "%m-%d %H:%M:%S")
+            | eval btime=strptime(closed_on, "%m-%d %H:%M:%S")
+            | eval duration=abs(btime-atime)
+            | stats count avg(eval(duration/60/60)) as avgMttr by assignment_group_name
+    </query>
+  </search>
+  <search id="mttr1" base="mttr">
+    <query>
+      where assignment_group_name="Jacqueline Support"
+      | eval mttr=round(avgMttr)</query>
+    <preview>
+      <set token="count1">$result.count$</set>
+      <set token="mttr1">$result.mttr$</set>
+    </preview>
+  </search>
+  <search id="mttr2" base="mttr">
+    <query>
+      where assignment_group_name="JI - SHU R1"
+      | eval mttr=round(avgMttr)</query>
+    <preview>
+      <set token="count2">$result.count$</set>
+      <set token="mttr2">$result.mttr$</set>
+    </preview>
+  </search>
+  <search id="mttr3" base="mttr">
+    <query>
+      where assignment_group_name="JI - SHU R1"
+      | eval mttr=round(avgMttr)</query>
+    <preview>
+      <set token="count3">$result.count$</set>
+      <set token="mttr3">$result.mttr$</set>
+    </preview>
+  </search>
+  <!--Base searches for Open Incidence with postprocess searches to filter Group for Single-->
+  <search id="openIncidents">
+    <query>
+      index=* sourcetype="servicenow" assignment_group_name="JI - SHU R1" OR assignment_group_name="JI - SHU Y1" OR assignment_group_name="Jacqueline Support"
+      | eval closed=if(closed_at=="",if(resolved_at=="","NA",resolved_at),closed_at)
+      | dedup number
+      | where active="true" AND isnull(closed) AND isnull(resolved_at)
+      | stats count by assignment_group_name
+    </query>
+  </search>
+  <search id="oI1" base="openIncidents">
+    <query>
+      where assignment_group_name="Jacqueline Support"
+    </query>
+    <preview>
+      <set token="ocount1">$result.count$</set>
+    </preview>
+  </search>
+  <search id="oI2" base="openIncidents">
+    <query>
+      where assignment_group_name="JI - SHU R1"
+    </query>
+    <preview>
+      <set token="ocount2">$result.count$</set>
+    </preview>
+  </search>
+  <search id="oI3" base="openIncidents">
+    <query>
+      where assignment_group_name="JI - SHU R1"
+    </query>
+    <preview>
+      <set token="ocount3">$result.count$</set>
+    </preview>
+  </search>
+  
   <row>
     <panel>
       <title>Overview</title>
@@ -16,21 +98,21 @@
           <tbody>
             <tr>
               <td><a href="#" class="button button-primary">Jacqueline Support</a></td>
-              <td>NA</td>
-              <td>NA</td>
-              <td>NA</td>
+              <td>$ocount1$</td>
+              <td>$count1$</td>
+              <td>$mttr1$ Min</td>
             </tr>
             <tr>
               <td><a href="#" class="button button-primary">JI - SHU Y1</a></td>
-              <td>42</td>
-              <td>NA</td>
-              <td>NA</td>
+              <td>$ocount2$</td>
+              <td>$count2$</td>
+              <td>$mttr3$ Min</td>
             </tr>
             <tr>
               <td><a href="#" class="button button-primary">JI - SHU R1</a></td>
-              <td>NA</td>
-              <td>NA</td>
-              <td>NA</td>
+              <td>$ocount3$</td>
+              <td>$count3$</td>
+              <td>$mttr3$ Min</td>
             </tr>
           </tbody>
         </table>
