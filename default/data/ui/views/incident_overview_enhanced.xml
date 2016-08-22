@@ -263,5 +263,20 @@
         <div id="datatemplate" ></div>
       </html>
     </panel>
+    <panel>
+      <panel>
+        <title>Day Hour Heatmap</title>
+        <html>
+          <div id="heatmaphourday"
+               class="splunk-view"
+               data-require="app/d3_splunk_extentions/components/heatmap_dayhour/heatmap_dayhour"
+               data-options="{
+              &quot;managerid&quot;: &quot;heatmaphourdaysearch&quot;,
+              &quot;height&quot;:&quot;500&quot;,
+              &quot;width&quot;:&quot;500&quot;,
+              &quot;valueField&quot;:&quot;value&quot;}"/>
+        </html>
+      </panel>
+    </panel>
   </row>
 </dashboard>
