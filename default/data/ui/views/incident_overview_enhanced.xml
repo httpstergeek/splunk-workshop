@@ -249,7 +249,6 @@
       </chart>
     </panel>
     <panel>
-      <title>Open Incidents</title>
       <search id="open">
         <query>
           index=* sourcetype="servicenow" assignment_group_name="$team$"
