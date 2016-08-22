@@ -4,8 +4,6 @@
   <search id="mttr">
     <query>
       index=* sourcetype="servicenow" assignment_group_name="JI - SHU R1" OR assignment_group_name="JI - SHU Y1" OR assignment_group_name="Jacqueline Support"
-      | eval resolved_at=mvdedup(resolved_at)
-      | eval closed_at=mvdedup(closed_at)
       | dedup number
       | eval closed=if(closed_at=="",if(resolved_at=="","NA",resolved_at),closed_at)
       | where closed!="NA"
@@ -211,8 +209,6 @@
         <search>
           <query>
             index=* sourcetype="servicenow" assignment_group_name="$team$"
-            | eval resolved_at=mvdedup(resolved_at)
-            | eval closed_at=mvdedup(closed_at)
             | dedup number
             | eval closed=if(closed_at=="",if(resolved_at=="","NA",resolved_at),closed_at)
             | where closed!="NA"
