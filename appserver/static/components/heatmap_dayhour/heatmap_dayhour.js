@@ -21,8 +21,7 @@ define(function(require, exports, module) {
       "data": "preview",
       "gridSize": 24,
       "height": 450,
-      "hourField": "time",
-      "dayField": "day",
+      "time": "_time",
       "valueField": "value",
       "colorbrewPalette": "Paired",
       "paletteNumber": 12
@@ -48,7 +47,19 @@ define(function(require, exports, module) {
     // Making the data look how we want it to for updateView to do its job
     formatData: function(data) {
       var formattedData = [];
-      formattedData.push(data);
+      var timestamp = this.settings.get('time');
+      var valueField = this.settings.get('valueField');
+      data.map(function(d) {
+        formattedData.push(
+          {
+            time: Number(new Date(d[timestamp]).getHours()) || 0,
+            day: Number(new Date(d[timestamp]).getDate()) || 0,
+            value: Number(d[valueField]) || 0
+          }
+        )
+
+      });
+
 
       return formattedData;
     },
@@ -56,7 +67,7 @@ define(function(require, exports, module) {
     updateView: function(viz, data) {
       this.$el.html("");
       var id = this.id;
-      $("#"+id).append("<p>"+ JSON.stringify(data[0],null, '  ') +"</p>")
+      $("#"+id).append("<p>"+ JSON.stringify(data,null, '  ') +"</p>")
 
     }
   });
