@@ -18,7 +18,8 @@
              data-require="app/splunk-workshop/components/heatmap_dayhour/heatmap_dayhour"
              data-options="{
                             &quot;managerid&quot;: &quot;heatmaphourdaysearch&quot;,
-                            &quot;valueField&quot;:&quot;count&quot;
+                            &quot;valueField&quot;:&quot;count&quot;,
+                            &quot;height&quot;:&quot;500&quot;
                             }"/>
       </html>
     </panel>

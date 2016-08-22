@@ -52,9 +52,9 @@ define(function(require, exports, module) {
       data.map(function(d) {
         formattedData.push(
           {
-            time: Number(new Date(d[timestamp]).getHours()) || 0,
-            day: Number(new Date(d[timestamp]).getDate()) || 0,
-            value: Number(d[valueField]) || 0
+            time: Number(new Date(d[timestamp]).getHours())+1,
+            day: Number(new Date(d[timestamp]).getDay())+1,
+            value: Number(d[valueField])
           }
         )
 
@@ -74,7 +74,7 @@ define(function(require, exports, module) {
       var paletteNumber = Number(this.settings.get('paletteNumber'));
       var height = Number(this.settings.get('height'));
 
-      var margin = { top: 50, right: 0, bottom: 100, left: 30 },
+      var margin = { top: 50, right: 20, bottom: 100, left: 30 },
         width = width - margin.left - margin.right,
         height = height - margin.top - margin.bottom,
         gridSize = Math.floor(width / gridSize),
