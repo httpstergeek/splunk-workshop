@@ -1,4 +1,4 @@
-<dashboard script="custom.js" stylesheet="custom.css">
+<dashboard script="custom.js" stylesheet="custom.css,tables.css">
   <label>Incident Overview Enhanced</label>
   <!--Base searches for mttr with postprocess searches to filter Group for Single-->
   <search id="mttr">
@@ -247,6 +247,21 @@
         <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
         <option name="charting.legend.placement">right</option>
       </chart>
+    </panel>
+    <panel>
+      <title>Open Incidents</title>
+      <search id="open">
+        <query>
+          index=* sourcetype="servicenow" assignment_group_name="$team$"
+          | eval closed=if(closed_at=="",if(resolved_at=="","NA",resolved_at),closed_at)
+          | dedup number
+          | where active="true" AND isnull(closed) AND isnull(resolved_at)
+          | stats count by assignment_user_username
+        </query>
+      </search>
+      <html>
+        <div id="datatemplate" ></div>
+      </html>
     </panel>
   </row>
 </dashboard>

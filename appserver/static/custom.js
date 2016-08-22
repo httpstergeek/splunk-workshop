@@ -3,8 +3,9 @@
  */
 require(["underscore",
     "jquery",
+    "splunkjs/mvc/datatemplateview",
     "splunkjs/mvc",]
-  , function(_, $, mvc) {
+  , function(_, $, DataTemplateView, mvc) {
     (function() {
 
       function setToken(name, value) {
@@ -41,5 +42,32 @@ require(["underscore",
         var team = $(this).text();
         setToken('team', team);
       });
+
+
+      var tableTemplate = '<table class=\"pure-table\">' +
+        '<thead>' +
+        '<tr>' +
+        '<th>Member</th>' +
+        '<th>Count</th>' +
+        '</tr>' +
+        '</thead>' +
+        '<tbody>' +
+        '<% for(var i=0, l=results.length; i<l; i++) { var line=results[i]; var hlight="pure-table-even"; if(i%2){hlight = "pure-table-odd"};  %>' +
+        '<tr class="<%= hlight %>"><td><%= line.assignment_user_username %></td><td><%= line.count %></td></tr>' +
+        '    <% } %>' +
+        '</tbody>' +
+        '</table>'
+      var defaultTokenModel = mvc.Components.get('default');
+
+      defaultTokenModel.on("change:team", function(team) {
+        // Instantiate DataTemplate
+        new DataTemplateView({
+          id: "open-data",
+          managerid: "open",
+          template: tableTemplate,
+          el: $("#datatemplate")
+        }).render();
+      });
+
     })();
   });
