@@ -24,8 +24,8 @@
       <html>
         <div id="mapcolorbrewer"
              class="splunk-view"
-             data-require="app/d3_splunk_extentions/components/heatmap_dayhour/mapcolorbrewer"
-             data-options=""/>
+             data-require="app/splunk-workshop/components/heatmap_dayhour/mapcolorbrewer"
+             data-options="{&quot;managerid&quot;: &quot;heatmaphourdaysearch&quot;}"/>
       </html>
     </panel>
   </row>
