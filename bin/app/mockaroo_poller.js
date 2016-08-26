@@ -21,20 +21,19 @@
   var Event = ModularInputs.Event;
   var Scheme = ModularInputs.Scheme;
   var Argument = ModularInputs.Argument;
-  var Async = splunkjs.Async;
 
   exports.getScheme = function () {
     var scheme = new Scheme("Mockaroo Poller");
 
     scheme.description = "Streams events containing a random Data from Mockaroo API.";
     scheme.useExternalValidation = true;
-    scheme.useSingleInstance = true; // setting to false will only run once and require interval to be set.
+    scheme.useSingleInstance = false;
 
     scheme.args = [
       new Argument({
-        name: "url",
+        name: "endpoint",
         dataType: Argument.dataTypeString,
-        description: "Mockaroo url",
+        description: "Mockaroo endpoint",
         requiredOnCreate: false,
         requiredOnEdit: false
       }),
@@ -42,6 +41,13 @@
         name: "key",
         dataType: Argument.dataTypeString,
         description: "API Key",
+        requiredOnCreate: true,
+        requiredOnEdit: false
+      }),
+      new Argument({
+        name: "port",
+        dataType: Argument.dataTypeNumber,
+        description: "port",
         requiredOnCreate: true,
         requiredOnEdit: false
       })
@@ -52,25 +58,56 @@
 
   exports.streamEvents = function (name, singleInput, eventWriter, done) {
     Logger.info(name, "Starting Mockaroo");
+    var endpoint = singleInput.endpoint;
+    var key = singleInput.key;
+    var port = singleInput.port;
+    var path = '/ea857240/download?count=100&key=' + key ;
+    var httpParams = {
+      host: endpoint,
+      port: Number(port),
+      path: path,
+      agent: false
+    };
 
-    var working = true;
+    // Creating http Get request
+    http.get(httpParams, function (res) {
+      var body = [];
 
-    // Async loop while no errors
-    Async.whilst(
-      function () {
-        return working;
-      },
-      function (done) {
-        // Fetch data  code here
+      res.on('data', function(data) {
 
+        body.push(data);
 
-      },
-      function (err) {
-        Logger.error(name, err);
+      }).on('end', function() {
+
+        body = Buffer.concat(body).toString();
+        var events = JSON.parse(body);
+
+        for (var i = 0; i < events.length; i++) {
+          // Creating Splunk Event
+          var curEvent = new Event({
+            source: 'mockaroo_poller',
+            sourcetype: 'mockaroo',
+            data: events[i]
+          });
+          // Attempt to write event to Splunk
+          try {
+            eventWriter.writeEvent(curEvent);
+          }
+          catch (e) {
+            Logger.error(name, 'failed to write event to Splunk');
+          }
+        }
+
         done();
-      }
-    );
-  }
+      }).on('error', function (e) {
+
+        Logger.error(name, 'request Failed: ' + e);
+        done(e);
+
+      });
+
+    });
+  };
 
   ModularInputs.execute(exports, module);
 })();
