@@ -19,6 +19,8 @@ from splunklib.searchcommands import dispatch, GeneratingCommand, Configuration,
 import sys
 from helpers import *
 import time
+import json
+import requests
 
 @Configuration()
 class MockarooCommand(GeneratingCommand):
@@ -26,29 +28,20 @@ class MockarooCommand(GeneratingCommand):
     events = Option(require=True, validate=validators.Integer(0))
 
     def generate(self):
-        self.logger.debug('CountMatchesCommand: %s', self)  # logs command line
+        self.logger.debug('MockarooCommand: %s', self)  # logs command line
         searchinfo = self.metadata.searchinfo
         app = AppConf(searchinfo.splunkd_uri, searchinfo.session_key)
         conf = app.get_config('mockaroo')
-        event = {}
-        event.update(conf.copy())
-        event['sid'] = searchinfo.sid
-        event['username'] = searchinfo.username
-        event['session_key'] = searchinfo.session_key
-        event['latest_time'] = searchinfo.latest_time
-        event['earliest_time'] = searchinfo.earliest_time
-        event['search'] = searchinfo.search
-        event['owner'] = searchinfo.owner
-        event['command'] = searchinfo.command
-        event['splunk_version'] = searchinfo.splunk_version
-        event['splunkd_uri'] = searchinfo.splunkd_uri
-        event['dispatch_dir'] = searchinfo.dispatch_dir
-        event['_raw'] = json.dumps(event)
-        # event.pop('mockaroo')
-        # event.update(dictexpand(conf))
-        for i in range(1, self.events + 1):
-            event['_serial'] = i
-            event['_time'] = time.time()
-            yield event
+        PATTERN = "%Y-%m-%dT%H:%M:%SZ"
+        url = '{}/ea857240/download?count={}&key={}'.format(conf['mockaroo']['url'], self.events, conf['mockaroo']['key'])
+        try:
+            result = requests.get(url)
+            events = json.loads(result.text)
+            for event in events:
+                event['_raw'] = json.dumps(event)
+                event['_time'] = int(time.mktime(time.strptime(event['timestamp'], PATTERN)))
+                yield event
+        except Exception as e:
+            self.logger.error('MockarooCommand Error: %s', self, e)
 
 dispatch(MockarooCommand, sys.argv, sys.stdin, sys.stdout, __name__)
