@@ -2,6 +2,7 @@
 *Retrieves Mockaroo data from API
 
 
-url = <string>
+endpoint = <string>
 key = <string>
+port = <int>
 interval = <int>
