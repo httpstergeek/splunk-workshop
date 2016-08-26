@@ -17,17 +17,38 @@
 
 from splunklib.searchcommands import dispatch, GeneratingCommand, Configuration, Option, validators
 import sys
+from helpers import *
 import time
-
 
 @Configuration()
 class MockarooCommand(GeneratingCommand):
 
-    records = Option(require=True, validate=validators.Integer(0))
+    events = Option(require=True, validate=validators.Integer(0))
 
     def generate(self):
-        record = {}
-
-        yield record
+        self.logger.debug('CountMatchesCommand: %s', self)  # logs command line
+        searchinfo = self.metadata.searchinfo
+        app = AppConf(searchinfo.splunkd_uri, searchinfo.session_key)
+        conf = app.get_config('mockaroo')
+        event = {}
+        event.update(conf.copy())
+        event['sid'] = searchinfo.sid
+        event['username'] = searchinfo.username
+        event['session_key'] = searchinfo.session_key
+        event['latest_time'] = searchinfo.latest_time
+        event['earliest_time'] = searchinfo.earliest_time
+        event['search'] = searchinfo.search
+        event['owner'] = searchinfo.owner
+        event['command'] = searchinfo.command
+        event['splunk_version'] = searchinfo.splunk_version
+        event['splunkd_uri'] = searchinfo.splunkd_uri
+        event['dispatch_dir'] = searchinfo.dispatch_dir
+        event['_raw'] = json.dumps(event)
+        # event.pop('mockaroo')
+        # event.update(dictexpand(conf))
+        for i in range(1, self.events + 1):
+            event['_serial'] = i
+            event['_time'] = time.time()
+            yield event
 
 dispatch(MockarooCommand, sys.argv, sys.stdin, sys.stdout, __name__)

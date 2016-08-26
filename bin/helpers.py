@@ -147,3 +147,21 @@ class AppConf:
             return False
         return json.loads(result.text)
 
+def dictexpand(item, key=None):
+    """
+    Flattens dictionary of dictionary using key from parent
+    :param item: dict object
+    :param key: key from parent
+    :return: dict
+    """
+    pdict = dict()
+    for k, v in item.iteritems():
+        if key:
+            k = "%s.%s" % (key, k)
+        if isinstance(v, dict):
+            cdict = dictexpand(v, k)
+            pdict = dict(pdict.items() + cdict.items())
+        else:
+            v = str(v)
+            pdict[k] = v
+    return pdict
