@@ -1,0 +1,1 @@
+@"%SPLUNK_HOME%"\bin\splunk cmd node "%~dp0\app\mockaroo_poller.js" %*

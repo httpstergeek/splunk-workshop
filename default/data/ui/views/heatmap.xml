@@ -1,0 +1,36 @@
+<dashboard script="autodiscover.js">
+  <label>Hour Day Heatmap</label>
+  <search id="heatmaphourdaysearch">
+    <query>
+      index=* sourcetype="servicenow" assignment_group_name="JI - SHU R1" OR assignment_group_name="JI - SHU Y1" OR assignment_group_name="Jacqueline Support"
+      | stats first(number) by number _time
+      | fields _time
+      | bucket  _time span=1h
+      | stats count by _time
+    </query>
+  </search>
+  <row>
+    <panel>
+      <title>Day Hour Heatmap</title>
+      <html>
+        <div id="heatmaphourday"
+             class="splunk-view"
+             data-require="app/splunk-workshop/components/heatmap_dayhour/heatmap_dayhour"
+             data-options="{
+                            &quot;managerid&quot;: &quot;heatmaphourdaysearch&quot;,
+                            &quot;valueField&quot;:&quot;count&quot;,
+                            &quot;height&quot;:&quot;500&quot;
+                            }"/>
+      </html>
+    </panel>
+    <panel>
+      <title>Colorbrew Options</title>
+      <html>
+        <div id="mapcolorbrewer"
+             class="splunk-view"
+             data-require="app/splunk-workshop/components/heatmap_dayhour/mapcolorbrewer"
+             data-options="{&quot;managerid&quot;: &quot;heatmaphourdaysearch&quot;}"/>
+      </html>
+    </panel>
+  </row>
+</dashboard>
